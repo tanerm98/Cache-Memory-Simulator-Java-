@@ -1,0 +1,159 @@
+POO - Tema 1 - Simulator Cache - Mustafa Taner 325CB
+
+Tema simuleaza 3 tipuri de cache: LRU, LFU si FIFO.
+
+	Tema contine:
+ - Main - clasa principala;
+ - Memorie - clasa;
+ - Subscriptie - clasa abstracta;
+ - Free - clasa - mosteneste Subscriptie;
+ - Basic - clasa - mosteneste Free;
+ - Premium - clasa - mosteneste Basic;
+ - Cache - interfata;
+ - LRUCache, LFUCache, FIFOCache - clase, implementeaza Cache.
+
+	CLASA ABSTRACTA SUBSCRIPTIE:
+ - memoreaza intr-un STRING numele obiectului care detine subscriptia;
+	Contine:
+ - un constructor cu parametru STRING, care seteaza numele obiectului;
+ - declararea unei metode de decrementare a numarului de subscriptii - nu returneaza nimic;
+ - declararea unei metode care returneaza numele subscriptiei valide.
+
+	CLASA FREE:
+ - mosteneste clasa abstracta Subscriptie;
+	Contine:
+ - un constructor cu parametru STRING, care apeleaza cu functia SUPER()
+constructorul clasei de baza Subscriptie, pentru a seta numele obiectului.
+ - metoda de decrementare care o suprascrie pe cea din clasa parinte. Nu face
+nimic pentru ca clasa Free este nelimitata si nu se decrementeaza.
+ - o metoda care returneaza stringul "Free" - tipul subscriptiei. Aceasta
+metoda o suprascrie pe cea din clasa parinte.
+
+	CLASA BASIC:
+ - mosteneste clasa Free, este limitata.
+ - memoreaza intr-un numar intreg numarul de subscriptii ramase de tip Basic;
+	Contine:
+ - un constructor cu parametrii STRING si INT; se apeleaza prin functia SUPER()
+constructorul clasei de baza pentru a seta numele obiectului si se seteaza nr
+de subscriptii Basic ramase;
+ - metoda de decrementare care suprascrie metoda clasei parinte. Daca exista
+subscriptii de tip Basic, numarul acestora se decrementeaza, altfel este 
+apelata functia suprascrisa a clasei parinte (subscriptia devine Free);
+ - metoda de returnare a tipului de subscriptie valabil, care suprascrie metoda
+clasei parinte. Daca mai exista subscriptii de tip Basic valabile, se afiseaza
+"Basic", altfel se apeleaza functia suprascrisca a clasei parinte.
+
+	Clasa Basic:
+ - mosteneste clasa Basic, este limitata.
+ - memoreaza intr-un numar intreg numarul de subscriptii ramase de tip Premium;
+	Contine:
+ - un constructor cu parametrii STRING si 2 de INT; se apeleaza prin functia 
+SUPER() constructorul clasei parinte "Basic" pentru a seta numele si numarul
+de subscriptii Basic (cu primele 2 argument) si se seteaza numarul de Premium;
+ - metoda de decrementare care suprascrie metoda clasei parinte. Daca exista
+subscriptii de tip Premium, numarul acestora se decrementeaza, altfel este 
+apelata functia suprascrisa a clasei parinte (subscriptia devine Basic);
+ - metoda de returnare a tipului de subscriptie valabil, care suprascrie metoda
+clasei parinte. Daca mai exista subscriptii de tip Premium valabile, se
+afiseaza "Premium", altfel se apeleaza functia suprascrisca a clasei parinte.
+
+	INTERFATA CACHE:
+- Contine declaratiile a 3 metode:
+ - metoda "add" cu parametru obiect de clasa Subscriptie;
+	- acceseaza un element din cache sau il adauga daca nu exista;
+ - metoda remove (fara parametri):
+	- elibereaza un element din cache, dupa o anumita regula data
+	de tipul de cache;
+ - metoda dupliCache:
+	- primeste ca parametru un string care reprezinta denumirea
+	obiectului care se cauta in memoria cache. Daca este gasit,
+	se elimina.
+
+	IMPLEMENTARE valabila pentru toate cele 3 tipuri de cache:
+	- In fiecare clasa (FIFO, LRU sau LFU), memoria este reprezentata de un
+vector de elemente de tip subscriptie (care este doar declarat ) si se retin in
+2 variabile (doar declarate) numarul de elemente maxim suportat de memorie si
+numarul curent de elemente din cache;
+	- constructorul fiecarei clase primeste 1 parametru - numarul maxim de
+elemente suportat - si il seteaza, apoi initializeaza vectorul de memorie
+cu numarul maxim suportat. In plus, clasa LFU creeaza un vector de tip int
+cu numar de elemente egal cu memoria maxima, unde se va retine pentru fiecare
+element din cache numarul de accesari al acestuia (usage frequency);
+
+	CUM ESTE IMPLEMENTAT VECTORUL DE MEMORIE (valabil pt. toate 3 tipuri)
+	Pentru a nu fi diferente majore in implementarea celor 3 tipuri de
+cache, vectorul de elemente va retine pe prima pozitie elemntul cel mai recent
+introdus (in cazul LRU, folosit) si pe ultima elementul cel mai demult introdus
+(folosit). In ordine crescatoare, elementele vor fi de la cel mai nou la cel
+mai vechi.
+	
+	METODA REMOVE
+	- Pentru FIFO si LRU, se sterge doar ultimul element din vector (acesta
+este mereu cel mai vechi) - concret, se micsoreaza nr de elemente curent.
+	- Pt LFU se sterge ultimul element cu cel mai mare "usage frequency" si
+se scade numarul de elemente curent. -> este garantat ca din 2 elemente cu
+aceeasi frecventa a utilizarii, se sterge cel mai vechi;
+	
+	METODA DUPLICACHE
+	- cauta elementul cu numele identic cu cel dat ca parametru si, daca il
+gaseste, muta toate elementele din dreapta cu o pozitie mai la stanga, astfel
+suprascriind elementul ce trebuie eliminat. Numarul de elemente curent se
+decrementeaza.
+
+	METODA ADD
+	- nr de subscriptii al elementului de accesat (dat ca parametru) este
+decrementat (prin metoda declarata in clasa Subscriptie);
+	- se cauta elementul  in vectorul cache; 
+	DACA SE GASESTE, in cazul
+ - FIFO se returneaza 0, 
+iar pt LFU si LRU elementul este adus pe prima pozitie, restul mutandu-se mai
+la dreapta -> se pastreaza cel mai recent accesat primul.
+	In plus, pentru LFU aceleasi modificari le sufera si vectorul contor,
+care si memoreaza accesarea obiectului (se incrementeaza pozitia
+corespunzatoare);
+	DACA NU SE GASESTE, in toate cazurile este introdus la inceputul
+vectorului si pentru LFU contorul devine 1 (prima accesare).
+
+	CLASA MEMORIE
+	- Declara un vector de tip Subscriptie, care reprezinta memoria princ;
+	- Declara 2 variabile care retin numarul curent de element;
+	- Declara fisierul de iesire.
+	Contine:
+	- Constructorul care primeste ca parametii numarul maxim de obiecte si
+numele fisierului de output si deschide fisierul si initializeaza vectorul de
+memorie.
+
+	- METODA ADDMEM care primeste ca parametru numele obiectului nou de
+adaugat si numarul de subscriptii Basic si Premium al acestuia;
+	- cauta daca obiectul se afla deja in memorie:
+	  DACA se afla, il suprascrie si returneaza 1.
+	  ALTFEL il adauga in ultima pozitie din vector, actualizand indicele
+	de numar curent de elemente si returneaza 0.
+
+	- METODA GET care primeste ca parametri numele noului obiect ce
+	trebuie accesat din cache si obiectul de tip cache declarat in Main
+	(urmeaza);
+	 - cauta elementul de accesat in memorie:
+	 DACA nu il gaseste, scrie "2";
+	 ALTFEL, prin metoda declarata in clasa Subscriptie, memoreaza intr-un
+	 string tipul de subscriptie valabil al obiectului.
+		- apeleaza metoda ADD a interfetei Cache, memorand valoarea
+		returnata intr-o variabila.
+		- cele 2 date returnate sunt scrise in output.
+
+	- metoda de inchidere a fisierului de output.
+
+	CLASA PRINCIPALA MAIN:
+	 - deschide fisierul de input dat in linia de comandal
+	 - citeste din fisier tipul de cache, marimea maxima a cache si numarul
+	 de comenzi.
+	 - creeaza un obiect de tip Memorie.
+	 - in functie de tipul de cache citit, creeaza un obiect de tip cache.
+	 - citeste fisierul de input pana la terminarea acestuia. 
+		DACA comanda
+	 este ADD, se apeleaza metoda de ADD din clasa Memorie. Daca aceasta
+	 returneaza 1 (exista un duplicat) este apelata metoda DUPLICACHE din
+	 interfata Cache.
+		ALTFEL se apeleaza metoda GET din memoria principala.
+	 - la final, este apelata metoda de inchidere a fisierului de output
+	 din clasa Memorie.
